@@ -40,26 +40,34 @@ try:
             st.error(f"Erro ao salvar: {e}")
             st.warning("Dica: Verifique se você compartilhou a planilha com o e-mail do robô como 'Editor'.")
 
-    # 6. Gráficos com Plotly (Para deixar o dashboard profissional)
-    if not df_editado.empty:
-        st.divider()
-        st.subheader("📊 Análise Visual")
-        
-        # Criando um gráfico automático baseado nas suas colunas
-        # Ele pega a 1ª coluna para o nome e a 3ª para os valores (ex: Notas)
-        cols = df_editado.columns.tolist()
-        
-        if len(cols) >= 3:
-            fig = px.bar(
-                df_editado, 
-                x=cols[0], 
-                y=cols[2], 
-                color=cols[1] if len(cols) > 1 else None,
-                title="Desempenho por Aluno",
-                template="plotly_white"
-            )
-            st.plotly_chart(fig, use_container_width=True)
+    # --- 6. Gráficos com Plotly ---
+if not df_editado.empty:
+    st.divider()
+    st.subheader("📊 Análise Visual")
+    
+    # Criamos uma cópia para o gráfico não quebrar a tabela
+    df_grafico = df_editado.copy()
+    
+    # --- LINHA MÁGICA: Converte a coluna de notas para número real ---
+    # Substitua 'cols[2]' pelo nome exato da sua coluna de notas se preferir
+    cols = df_grafico.columns.tolist()
+    df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]], errors='coerce')
+    
+    # Remove linhas onde a nota ficou vazia para o gráfico não dar erro
+    df_grafico = df_grafico.dropna(subset=[cols[2]])
 
-except Exception as e:
-    st.error(f"Erro ao conectar com a planilha: {e}")
-    st.info("Verifique se os Secrets estão configurados corretamente no Streamlit Cloud.")
+    # Agora sim, o gráfico com escala numérica correta
+    fig = px.bar(
+        df_grafico, 
+        x=cols[0], 
+        y=cols[2], 
+        color=cols[1] if len(cols) > 1 else None,
+        title="Desempenho por Aluno",
+        template="plotly_white",
+        labels={cols[2]: "Nota Real"} # Melhora o nome no eixo
+    )
+    
+    # Força o eixo Y a começar do zero e ir até 10 (opcional, mas fica melhor)
+    fig.update_yaxes(range=[0, 10])
+    
+    st.plotly_chart(fig, use_container_width=True)
