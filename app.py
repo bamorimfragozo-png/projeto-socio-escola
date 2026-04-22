@@ -14,7 +14,7 @@ def conectar_planilha():
 st.title("🏫 Dashboard Sócio-Pedagógico")
 
 # LINK DA SUA PLANILHA
-URL_PLANILHA = "SUA_URL_AQUI"
+URL_PLANILHA = "https://docs.google.com/spreadsheets/d/14ShnxHC_ktuEWvZ3r2NASqmT7A_M9deWsxRAJ7zDKec/edit?usp=sharing"
 
 try:
     # Lendo os dados para visualização (isso funciona!)
