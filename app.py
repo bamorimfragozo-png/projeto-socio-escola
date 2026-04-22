@@ -1,60 +1,32 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
+from streamlit_gsheets import GSheetsConnection
 
-# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Sistema Sócio-Pedagógico", layout="wide")
 
-# 2. FUNÇÃO PARA LIMPAR O LINK (Resolve o erro de URL)
-def preparar_url(url):
-    if "/edit" in url:
-        return url.split("/edit")[0] + "/export?format=csv"
-    elif "/view" in url:
-        return url.split("/view")[0] + "/export?format=csv"
-    return url
+st.title("🏫 Painel de Controle Sócio-Pedagógico")
 
-# 3. INTERFACE
-st.title("🏫 Sistema de Registro Sócio-Pedagógico")
+# 1. Conectando com a planilha (usando o segredo que vamos por no site)
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# COLOQUE SEU LINK AQUI
-LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/14ShnxHC_ktuEWvZ3r2NASqmT7A_M9deWsxRAJ7zDKec/edit?usp=sharing"
+# 2. Lendo os dados atuais
+df = conn.read()
 
-try:
-    # 4. CARREGAMENTO DOS DADOS
-    url_final = preparar_url(LINK_DA_PLANILHA)
-    df = pd.read_csv(url_final)
-    
-    # 5. TABELA INTERATIVA
-    st.subheader("📝 Registros de Alunos")
-    df_editado = st.data_editor(df, use_container_width=True)
+st.subheader("Inserir ou Editar Dados")
+# 3. O segredo: st.data_editor permite que você digite no Dashboard
+df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
-    # 6. GRÁFICO COM PLOTLY (Muito mais bonito)
-    st.divider()
-    st.subheader("📊 Análise Visual de Desempenho")
-    
-    # Criando um gráfico de barras interativo
-    # Supondo que sua planilha tenha colunas 'Nome' e 'Nota'
-    colunas = df_editado.columns.tolist()
-    
-    if len(colunas) >= 2:
-        fig = px.bar(
-            df_editado, 
-            x=colunas[0], # Nome do Aluno
-            y=colunas[2] if len(colunas) > 2 else colunas[1], # Nota
-            title="Desempenho por Aluno",
-            labels={colunas[0]: "Aluno", colunas[2] if len(colunas) > 2 else colunas[1]: "Pontuação"},
-            color=colunas[0], # Dá uma cor para cada aluno
-            template="plotly_white"
-        )
-        
-        # Exibe o gráfico do Plotly no Streamlit
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("A planilha precisa de pelo menos 2 colunas para gerar o gráfico.")
-
-    if st.button("💾 ATUALIZAR DASHBOARD"):
+# 4. BOTÃO QUE SALVA DE VERDADE NA PLANILHA
+if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
+    try:
+        conn.update(data=df_editado)
+        st.success("✅ Dados salvos com sucesso na sua Planilha Google!")
         st.balloons()
-        st.success("Visualização atualizada!")
+    except Exception as e:
+        st.error(f"Erro ao salvar: {e}")
 
-except Exception as e:
-    st.error(f"Erro ao carregar dados: {e}")
+# --- GRÁFICOS ---
+st.divider()
+if not df_editado.empty:
+    st.subheader("📊 Visualização dos Dados Salvos")
+    # Gráfico simples usando as duas primeiras colunas
+    st.bar_chart(df_editado.set_index(df_editado.columns[0])[df_editado.columns[1]])
