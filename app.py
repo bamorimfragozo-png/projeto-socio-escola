@@ -1,32 +1,47 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
+import pandas as pd
+import gspread
 
-st.set_page_config(page_title="Sistema Sócio-Pedagógico", layout="wide")
+st.set_page_config(page_title="Sistema Escola", layout="wide")
 
-st.title("🏫 Painel de Controle Sócio-Pedagógico")
+# --- FUNÇÃO PARA CONECTAR (Modo gspread) ---
+def conectar_planilha():
+    # Aqui, para salvar, o Google EXIGE que você use um e-mail de serviço.
+    # Se você não quer criar um, a ÚNICA alternativa é ler a planilha
+    # e, para salvar, você terá que baixar o arquivo e subir no Google.
+    pass
 
-# 1. Conectando com a planilha (usando o segredo que vamos por no site)
-conn = st.connection("gsheets", type=GSheetsConnection)
+st.title("🏫 Dashboard Sócio-Pedagógico")
 
-# 2. Lendo os dados atuais
-df = conn.read()
+# LINK DA SUA PLANILHA
+URL_PLANILHA = "SUA_URL_AQUI"
 
-st.subheader("Inserir ou Editar Dados")
-# 3. O segredo: st.data_editor permite que você digite no Dashboard
-df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
+try:
+    # Lendo os dados para visualização (isso funciona!)
+    url_csv = URL_PLANILHA.split("/edit")[0] + "/export?format=csv"
+    df = pd.read_csv(url_csv)
+    
+    st.subheader("Visualizar e Editar Dados")
+    df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
-# 4. BOTÃO QUE SALVA DE VERDADE NA PLANILHA
-if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
-    try:
-        conn.update(data=df_editado)
-        st.success("✅ Dados salvos com sucesso na sua Planilha Google!")
-        st.balloons()
-    except Exception as e:
-        st.error(f"Erro ao salvar: {e}")
+    # --- O PROBLEMA DO SALVAR ---
+    st.warning("⚠️ O Google bloqueia a gravação direta via link público por segurança.")
+    
+    # Alternativa Pro para o seu Projeto Integrador:
+    st.markdown("### Como salvar suas alterações:")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("📥 Gerar Arquivo Atualizado"):
+            csv = df_editado.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Clique aqui para Baixar o CSV",
+                data=csv,
+                file_name='dados_escola_atualizados.csv',
+                mime='text/csv',
+            )
+            st.success("Arquivo gerado! Agora basta importar no seu Google Sheets.")
 
-# --- GRÁFICOS ---
-st.divider()
-if not df_editado.empty:
-    st.subheader("📊 Visualização dos Dados Salvos")
-    # Gráfico simples usando as duas primeiras colunas
-    st.bar_chart(df_editado.set_index(df_editado.columns[0])[df_editado.columns[1]])
+except Exception as e:
+    st.error(f"Erro: {e}")
