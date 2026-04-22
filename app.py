@@ -71,3 +71,6 @@ if not df_editado.empty:
     fig.update_yaxes(range=[0, 10])
     
     st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+    st.error(f"Erro ao conectar com a planilha: {e}")
+    st.info("Verifique se os Secrets estão configurados corretamente no Streamlit Cloud.")
