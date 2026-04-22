@@ -11,15 +11,22 @@ st.title("🏫 Dashboard Sócio-Pedagógico")
 # O Streamlit busca automaticamente as credenciais no menu Secrets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 3. Leitura dos dados
+# --- 3. Leitura dos dados ---
 try:
+    # Lê os dados da planilha
     df = conn.read()
     
+    # --- NOVO: FORÇAR AS COLUNAS A ACEITAREM TEXTO ---
+    # Isso evita que o "M" de Maria vire "0"
+    for col in df.columns:
+        df[col] = df[col].astype(str).replace('nan', '')
+    # -----------------------------------------------
+
     st.subheader("Visualizar e Editar Dados")
     st.info("Clique nas células da tabela abaixo para editar. Depois, clique no botão 'Salvar' no final.")
 
-    # 4. Tabela Interativa (Editor de Dados)
-    # 'num_rows="dynamic"' permite adicionar ou excluir linhas no dashboard
+    # --- 4. Tabela Interativa (Editor de Dados) ---
+    # Agora com os dados preparados para aceitar letras!
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
     # 5. Botão para Salvar as alterações na planilha original
