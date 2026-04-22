@@ -25,7 +25,7 @@ df_editado = st.data_editor(
 
 if st.button("💾 SALVAR ALTERAÇÕES PERMANENTEMENTE"):
     try:
-        conn.update(data=df_editado)
+        conn.update(data=df_editado, worksheet="dados")
         st.success("Dados sincronizados com sucesso!")
         st.balloons()
     except Exception as e:
