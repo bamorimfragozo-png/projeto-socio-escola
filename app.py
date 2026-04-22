@@ -11,7 +11,7 @@ st.markdown("Alimente os dados abaixo. As alterações são salvas diretamente n
 
 # 1. Conexão com o banco de dados (Planilha oculta)
 conn = st.connection("gsheets", type=GSheetsConnection)
-df = conn.read()
+df = conn.read(worksheet="Página 1")
 
 # 2. Ler dados existentes
 # Se a planilha estiver vazia, ele cria as colunas padrão
