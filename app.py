@@ -1,57 +1,60 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import plotly.express as px
 
-# Configuração da página
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Sistema Sócio-Pedagógico", layout="wide")
 
+# 2. FUNÇÃO PARA LIMPAR O LINK (Resolve o erro de URL)
+def preparar_url(url):
+    if "/edit" in url:
+        return url.split("/edit")[0] + "/export?format=csv"
+    elif "/view" in url:
+        return url.split("/view")[0] + "/export?format=csv"
+    return url
+
+# 3. INTERFACE
 st.title("🏫 Sistema de Registro Sócio-Pedagógico")
-st.markdown("Alimente os dados abaixo. As alterações são salvas diretamente na nuvem da escola.")
 
-# 1. Conexão com o banco de dados (Planilha oculta)
-conn = st.connection("gsheets", type=GSheetsConnection)
-df = conn.read(worksheet="Página1")
+# COLOQUE SEU LINK AQUI
+LINK_DA_PLANILHA = "SUA_URL_AQUI"
 
-# 2. Ler dados existentes
-# Se a planilha estiver vazia, ele cria as colunas padrão
 try:
-    df_existente = conn.read(ttl=0) # ttl=0 garante que ele busque o dado mais recente
-except:
-    df_existente = pd.DataFrame(columns=["Nome do Aluno", "Turma", "Nota Comportamento", "Ocorrências", "Observações"])
-
-# 3. Interface de Edição (O que o Sócio vai usar)
-st.subheader("📝 Tabela de Registros")
-df_editado = st.data_editor(
-    df_existente, 
-    num_rows="dynamic", 
-    use_container_width=True,
-    key="editor_pedagogico"
-)
-
-# 4. Botão de Salvar
-if st.button("💾 SALVAR ALTERAÇÕES PERMANENTEMENTE"):
-    conn.update(data=df_editado)
-    st.success("Dados sincronizados com sucesso!")
-    st.balloons()
-    st.rerun()
-
-st.divider()
-
-# 5. Dashboard Visual (Atualiza sozinho com os dados salvos)
-if not df_editado.empty:
-    st.header("📊 Análise Gerencial")
+    # 4. CARREGAMENTO DOS DADOS
+    url_final = preparar_url(LINK_DA_PLANILHA)
+    df = pd.read_csv(url_final)
     
-    col1, col2 = st.columns(2)
+    # 5. TABELA INTERATIVA
+    st.subheader("📝 Registros de Alunos")
+    df_editado = st.data_editor(df, use_container_width=True)
+
+    # 6. GRÁFICO COM PLOTLY (Muito mais bonito)
+    st.divider()
+    st.subheader("📊 Análise Visual de Desempenho")
     
-    with col1:
-        # Gráfico de Comportamento
-        fig_bar = px.bar(df_editado, x="Nome do Aluno", y="Nota Comportamento", color="Turma", title="Desempenho por Aluno")
-        st.plotly_chart(fig_bar, use_container_width=True)
+    # Criando um gráfico de barras interativo
+    # Supondo que sua planilha tenha colunas 'Nome' e 'Nota'
+    colunas = df_editado.columns.tolist()
+    
+    if len(colunas) >= 2:
+        fig = px.bar(
+            df_editado, 
+            x=colunas[0], # Nome do Aluno
+            y=colunas[2] if len(colunas) > 2 else colunas[1], # Nota
+            title="Desempenho por Aluno",
+            labels={colunas[0]: "Aluno", colunas[2] if len(colunas) > 2 else colunas[1]: "Pontuação"},
+            color=colunas[0], # Dá uma cor para cada aluno
+            template="plotly_white"
+        )
         
-    with col2:
-        # Gráfico de Ocorrências
-        fig_pie = px.pie(df_editado, values="Ocorrências", names="Turma", title="Distribuição de Ocorrências por Turma")
-        st.plotly_chart(fig_pie, use_container_width=True)
-else:
-    st.info("Adicione dados na tabela acima para gerar os gráficos.")
+        # Exibe o gráfico do Plotly no Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("A planilha precisa de pelo menos 2 colunas para gerar o gráfico.")
+
+    if st.button("💾 ATUALIZAR DASHBOARD"):
+        st.balloons()
+        st.success("Visualização atualizada!")
+
+except Exception as e:
+    st.error(f"Erro ao carregar dados: {e}")
