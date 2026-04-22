@@ -17,7 +17,7 @@ def preparar_url(url):
 st.title("🏫 Sistema de Registro Sócio-Pedagógico")
 
 # COLOQUE SEU LINK AQUI
-LINK_DA_PLANILHA = "SUA_URL_AQUI"
+LINK_DA_PLANILHA = "https://docs.google.com/spreadsheets/d/14ShnxHC_ktuEWvZ3r2NASqmT7A_M9deWsxRAJ7zDKec/edit?usp=sharing"
 
 try:
     # 4. CARREGAMENTO DOS DADOS
