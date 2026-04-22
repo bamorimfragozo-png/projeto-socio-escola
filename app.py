@@ -1,47 +1,58 @@
 import streamlit as st
-import pandas as pd
-import gspread
+from streamlit_gsheets import GSheetsConnection
+import plotly.express as px
 
-st.set_page_config(page_title="Sistema Escola", layout="wide")
-
-# --- FUNÇÃO PARA CONECTAR (Modo gspread) ---
-def conectar_planilha():
-    # Aqui, para salvar, o Google EXIGE que você use um e-mail de serviço.
-    # Se você não quer criar um, a ÚNICA alternativa é ler a planilha
-    # e, para salvar, você terá que baixar o arquivo e subir no Google.
-    pass
+# 1. Configuração inicial da página
+st.set_page_config(page_title="Dashboard Sócio-Pedagógico", layout="wide")
 
 st.title("🏫 Dashboard Sócio-Pedagógico")
 
-# LINK DA SUA PLANILHA
-URL_PLANILHA = "https://docs.google.com/spreadsheets/d/14ShnxHC_ktuEWvZ3r2NASqmT7A_M9deWsxRAJ7zDKec/edit?usp=sharing"
+# 2. Conexão com o Google Sheets usando os Secrets (JSON da Conta de Serviço)
+# O Streamlit busca automaticamente as credenciais no menu Secrets
+conn = st.connection("gsheets", type=GSheetsConnection)
 
+# 3. Leitura dos dados
 try:
-    # Lendo os dados para visualização (isso funciona!)
-    url_csv = URL_PLANILHA.split("/edit")[0] + "/export?format=csv"
-    df = pd.read_csv(url_csv)
+    df = conn.read()
     
     st.subheader("Visualizar e Editar Dados")
+    st.info("Clique nas células da tabela abaixo para editar. Depois, clique no botão 'Salvar' no final.")
+
+    # 4. Tabela Interativa (Editor de Dados)
+    # 'num_rows="dynamic"' permite adicionar ou excluir linhas no dashboard
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
-    # --- O PROBLEMA DO SALVAR ---
-    st.warning("⚠️ O Google bloqueia a gravação direta via link público por segurança.")
-    
-    # Alternativa Pro para o seu Projeto Integrador:
-    st.markdown("### Como salvar suas alterações:")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("📥 Gerar Arquivo Atualizado"):
-            csv = df_editado.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Clique aqui para Baixar o CSV",
-                data=csv,
-                file_name='dados_escola_atualizados.csv',
-                mime='text/csv',
+    # 5. Botão para Salvar as alterações na planilha original
+    if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
+        try:
+            # Envia a tabela editada de volta para o Google Sheets
+            conn.update(data=df_editado)
+            st.success("✅ Sucesso! Os dados foram atualizados na sua planilha do Google.")
+            st.balloons()
+        except Exception as e:
+            st.error(f"Erro ao salvar: {e}")
+            st.warning("Dica: Verifique se você compartilhou a planilha com o e-mail do robô como 'Editor'.")
+
+    # 6. Gráficos com Plotly (Para deixar o dashboard profissional)
+    if not df_editado.empty:
+        st.divider()
+        st.subheader("📊 Análise Visual")
+        
+        # Criando um gráfico automático baseado nas suas colunas
+        # Ele pega a 1ª coluna para o nome e a 3ª para os valores (ex: Notas)
+        cols = df_editado.columns.tolist()
+        
+        if len(cols) >= 3:
+            fig = px.bar(
+                df_editado, 
+                x=cols[0], 
+                y=cols[2], 
+                color=cols[1] if len(cols) > 1 else None,
+                title="Desempenho por Aluno",
+                template="plotly_white"
             )
-            st.success("Arquivo gerado! Agora basta importar no seu Google Sheets.")
+            st.plotly_chart(fig, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Erro: {e}")
+    st.error(f"Erro ao conectar com a planilha: {e}")
+    st.info("Verifique se os Secrets estão configurados corretamente no Streamlit Cloud.")
