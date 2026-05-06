@@ -25,7 +25,6 @@ try:
     st.info("💡 Dica: Use 'TAB' para pular para a próxima coluna e 'ENTER' para a linha de baixo.")
     
     # --- 4. Tabela Interativa (Editor de Dados) ---
-    # O st.data_editor permite navegação por TAB por padrão
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
     # 5. Botão para Salvar as alterações
@@ -61,42 +60,41 @@ try:
                 # --- ORDENAÇÃO ALFABÉTICA POR ANO E DEPOIS POR NOME ---
                 df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
 
-                # --- PADRONIZAÇÃO DE CORES POR TURMA ---
-                # Definimos cores fixas para as turmas para que nunca mudem
+                # --- PADRONIZAÇÃO DE CORES ---
+                # Cores fixas para as Turmas
                 turmas_unicas = sorted(df_grafico[cols[1]].unique())
-                paleta_turmas = px.colors.qualitative.Set1 # Paleta firme e clara
+                paleta_turmas = px.colors.qualitative.Set1 
                 mapa_cores_turma = {turma: paleta_turmas[i % len(paleta_turmas)] for i, turma in enumerate(turmas_unicas)}
 
-                # Paleta Automática para Alunos (usada no gráfico empilhado e pizza)
+                # Paleta Automática para Alunos
                 paleta_alunos = px.colors.qualitative.Prism
 
                 if not df_grafico.empty:
                     
-                    # --- GRÁFICO 1: BARRAS SIMPLES (Cores por Turma - Padronizado) ---
+                    # --- GRÁFICO 1: BARRAS SIMPLES ---
                     st.write("### 📊 Desempenho Individual (Ordenado por Ano/Nome)")
                     fig_barras = px.bar(
                         df_grafico, 
                         x=cols[0], 
                         y=cols[2], 
                         color=cols[1],
-                        color_discrete_map=mapa_cores_turma, # Usa o mapa fixo
+                        color_discrete_map=mapa_cores_turma,
                         title="Notas por Aluno",
                         template="plotly_white",
-                        # Garante que a ordem no eixo X siga a ordenação do DataFrame (Ano -> Nome)
                         category_orders={cols[0]: df_grafico[cols[0]].tolist()}
                     )
                     st.plotly_chart(fig_barras, use_container_width=True)
 
                     st.divider()
 
-                    # --- GRÁFICO 2: BARRAS EMPILHADAS (Paleta Automática de Alunos) ---
+                    # --- GRÁFICO 2: BARRAS EMPILHADAS ---
                     st.write("### 📦 Distribuição Acumulada por Turma")
                     fig_stack = px.bar(
                         df_grafico, 
                         x=cols[1], 
                         y=cols[2], 
                         color=cols[0],
-                        color_discrete_sequence=paleta_alunos, # Paleta automática
+                        color_discrete_sequence=paleta_alunos,
                         title="Soma de Notas por Ano",
                         template="plotly_white", 
                         barmode='stack'
@@ -106,14 +104,14 @@ try:
 
                     st.divider()
 
-                    # --- GRÁFICO 3: LINHAS (Cores por Turma - Padronizado) ---
+                    # --- GRÁFICO 3: LINHAS ---
                     st.write("### 📈 Evolução por Turma")
                     fig_linha = px.line(
                         df_grafico, 
                         x=cols[0], 
                         y=cols[2], 
                         color=cols[1],
-                        color_discrete_map=mapa_cores_turma, # Mesmo mapa de cores
+                        color_discrete_map=mapa_cores_turma,
                         title="Tendência de Notas",
                         markers=True,
                         template="plotly_white"
@@ -123,7 +121,7 @@ try:
 
                     st.divider()
 
-                    # --- GRÁFICO 4: PIZZA (Paleta Automática) ---
+                    # --- GRÁFICO 4: PIZZA ---
                     st.write("### 🍕 Distribuição Proporcional")
                     fig_pizza = px.pie(
                         df_grafico, 
@@ -131,13 +129,31 @@ try:
                         names=cols[1], 
                         title="Participação de cada Ano no Resultado Total",
                         color=cols[1],
-                        color_discrete_map=mapa_cores_turma # Mantém a cor do ano aqui também
+                        color_discrete_map=mapa_cores_turma
                     )
                     fig_pizza.update_traces(textinfo='percent+label', textposition='inside')
                     st.plotly_chart(fig_pizza, use_container_width=True)
 
+                    st.divider()
+
+                    # --- GRÁFICO 5: DISPERSÃO (TESTE DE PADRONIZAÇÃO) ---
+                    st.write("### 🎯 Teste de Cores: Desempenho por Aluno")
+                    fig_dispersao = px.scatter(
+                        df_grafico, 
+                        x=cols[0],           # Nome do Aluno
+                        y=cols[2],           # Nota
+                        color=cols[0],       # Cor por NOME
+                        size=cols[2],        # Tamanho pela nota
+                        color_discrete_sequence=paleta_alunos, # Mesma paleta do gráfico 2
+                        title="Validação de Cores Individuais",
+                        template="plotly_white"
+                    )
+                    fig_dispersao.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
+                    st.plotly_chart(fig_dispersao, use_container_width=True)
+                    st.caption("Observe se a cor da bolha coincide com a cor do aluno no gráfico empilhado.")
+
                 else:
-                    st.warning("Insira valores numéricos válidos para gerar os gráficos.")
+                    st.warning("Insira valores numéricos válidos na terceira coluna para gerar os gráficos.")
             
             except Exception as e:
                 st.error(f"Erro ao processar gráficos: {e}")
