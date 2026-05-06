@@ -67,33 +67,6 @@ try:
                     )
                     fig_stack.update_traces(marker_line_width=1.5, marker_line_color="white")
                     st.plotly_chart(fig_stack, use_container_width=True)
-# --- GRÁFICO 3: LINHAS (ESTILO TEMPERATURA) ---
-                st.write("### 📈 Evolução de Notas")
-                fig3 = px.line(
-                    df_grafico, 
-                    x=cols[0], 
-                    y=cols[2], 
-                    color=cols[1],
-                    title="Tendência de Desempenho",
-                    markers=True,
-                    template="plotly_white"
-                )
-                fig3.update_traces(line=dict(width=3))
-                st.plotly_chart(fig3, use_container_width=True)
-
-                st.divider()
-
-                # --- GRÁFICO 4: PIZZA (ESTILO PREFERÊNCIA) ---
-                st.write("### 🍕 Proporção Percentual")
-                fig4 = px.pie(
-                    df_grafico, 
-                    values=cols[2], 
-                    names=cols[1],
-                    title="Participação por Categoria",
-                    color_discrete_sequence=px.colors.qualitative.Safe
-                )
-                fig4.update_traces(textinfo='percent+label', textposition='inside')
-                st.plotly_chart(fig4, use_container_width=True)
 
                 else:
                     st.warning("Insira números válidos para visualizar os gráficos.")
