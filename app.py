@@ -71,7 +71,7 @@ try:
                 if not df_grafico.empty:
                     
                     # --- GRÁFICO 1: BARRAS SIMPLES ---
-                    st.write("Desempenho Individual (Ordenado por Ano/Nome)")
+                    st.write("### Desempenho Individual")
                     fig_barras = px.bar(
                         df_grafico, 
                         x=cols[0], 
@@ -87,7 +87,7 @@ try:
                     st.divider()
 
                     # --- GRÁFICO 2: BARRAS EMPILHADAS ---
-                    st.write("### 📦 Distribuição Acumulada por Turma")
+                    st.write("### Distribuição Acumulada por Turma")
                     fig_stack = px.bar(
                         df_grafico, 
                         x=cols[1], 
@@ -104,7 +104,7 @@ try:
                     st.divider()
 
                     # --- GRÁFICO 3: LINHAS ---
-                    st.write("### 📈 Evolução por Turma")
+                    st.write("### Evolução por Turma")
                     fig_linha = px.line(
                         df_grafico, 
                         x=cols[0], 
@@ -121,7 +121,7 @@ try:
                     st.divider()
 
                     # --- GRÁFICO 4: PIZZA ---
-                    st.write("### 🍕 Distribuição Proporcional")
+                    st.write("### Distribuição Proporcional")
                     fig_pizza = px.pie(
                         df_grafico, 
                         values=cols[2], 
@@ -136,7 +136,7 @@ try:
                     st.divider()
 
                     # --- GRÁFICO 5: DISPERSÃO (TESTE DE PADRONIZAÇÃO) ---
-                    st.write("### 🎯 Teste de Cores: Desempenho por Aluno")
+                    st.write("### Gráfico de Bolhas: Desempenho por Aluno")
                     fig_dispersao = px.scatter(
                         df_grafico, 
                         x=cols[0],           # Nome do Aluno
