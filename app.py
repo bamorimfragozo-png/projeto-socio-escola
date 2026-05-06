@@ -51,6 +51,7 @@ try:
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
                 # ORDENAÇÃO ALFABÉTICA POR ANO E DEPOIS POR NOME 
                 df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
+                ordem_turmas = sorted(df_grafico[cols[1]].unique())
                 # PADRONIZAÇÃO DE CORES 
                 turmas_unicas = sorted(df_grafico[cols[1]].unique())
                 paleta_turmas = px.colors.qualitative.Set1 
@@ -114,6 +115,7 @@ try:
                         title="Participação de cada Ano no Resultado Total",
                         color=cols[1],
                         color_discrete_map=mapa_cores_turma,
+                        category_orders={cols[1]: ordem_turmas}
                     )
                     fig_pizza.update_traces(textinfo='percent+label', textposition='inside')
                     st.plotly_chart(fig_pizza, use_container_width=True)
