@@ -41,42 +41,43 @@ try:
             st.warning("Dica: Verifique se você compartilhou a planilha com o e-mail do robô como 'Editor'.")
 
     # 6. Gráficos com Plotly (Para deixar o dashboard profissional)
-    # 6. Gráficos com Plotly (Para deixar o dashboard profissional)
+    # 6. Gráficos com Plotly
     if not df_editado.empty:
         st.divider()
         st.subheader("📊 Análise Visual")
         
-        # Criamos uma cópia para não estragar a tabela principal
+        # Criamos uma cópia para o gráfico
         df_grafico = df_editado.copy()
-        
         cols = df_grafico.columns.tolist()
         
         if len(cols) >= 3:
             try:
-                # CONVERSÃO MÁGICA: Transforma a coluna de notas em número para o gráfico funcionar
-                # errors='coerce' faz com que textos inválidos virem 'vazio' em vez de dar erro
-                df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]], errors='coerce')
+                # Importante: Importe o pandas no topo do arquivo: import pandas as pd
+                import pandas as pd 
                 
-                # Remove linhas onde a nota está vazia para o gráfico ficar limpo
+                # Converte a 3ª coluna (Notas) para número, ignorando erros
+                df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]].astype(str).str.replace(',', '.'), errors='coerce')
+                
+                # Remove linhas sem nota para não sujar o gráfico
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
 
-                fig = px.bar(
-                    df_grafico, 
-                    x=cols[0], 
-                    y=cols[2], 
-                    color=cols[1] if len(cols) > 1 else None,
-                    title="Desempenho por Aluno",
-                    template="plotly_white",
-                    labels={cols[2]: "Nota/Valor"} # Melhora a legenda
-                )
-                
-                # Ajusta o eixo Y para sempre mostrar de 0 a 10 (opcional)
-                fig.update_yaxes(range=[0, 10])
-                
-                st.plotly_chart(fig, use_container_width=True)
-                
+                if not df_grafico.empty:
+                    fig = px.bar(
+                        df_grafico, 
+                        x=cols[0], 
+                        y=cols[2], 
+                        color=cols[1] if len(cols) > 1 else None,
+                        title="Desempenho por Aluno",
+                        template="plotly_white",
+                        labels={cols[2]: "Nota"}
+                    )
+                    fig.update_yaxes(range=[0, 10]) # Escala de 0 a 10
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.warning("Insira números válidos na coluna de notas para visualizar o gráfico.")
+                    
             except Exception as e:
-                st.warning(f"Não foi possível gerar o gráfico: Verifique se a coluna '{cols[2]}' contém apenas números.")
+                st.error(f"Erro técnico no gráfico: {e}")
 
 except Exception as e:
     st.error(f"Erro ao conectar com a planilha: {e}")
