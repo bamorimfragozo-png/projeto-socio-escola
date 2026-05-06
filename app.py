@@ -67,32 +67,33 @@ try:
                     )
                     fig_stack.update_traces(marker_line_width=1.5, marker_line_color="white")
                     st.plotly_chart(fig_stack, use_container_width=True)
+# --- GRÁFICO 3: LINHAS (ESTILO TEMPERATURA) ---
+                st.write("### 📈 Evolução de Notas")
+                fig3 = px.line(
+                    df_grafico, 
+                    x=cols[0], 
+                    y=cols[2], 
+                    color=cols[1],
+                    title="Tendência de Desempenho",
+                    markers=True,
+                    template="plotly_white"
+                )
+                fig3.update_traces(line=dict(width=3))
+                st.plotly_chart(fig3, use_container_width=True)
 
-                    # --- NOVO: GRÁFICO 3: PIZZA (PROPORÇÃO DE NOTAS POR TURMA) ---
-                    st.divider()
-                    st.subheader("🍕 Distribuição Proporcional (Pizza)")
-                    fig_pizza = px.pie(
-                        df_grafico, 
-                        values=cols[2], 
-                        names=cols[1], # Agrupado por Turma
-                        title="Proporção da Soma de Notas por Turma",
-                        hole=0.3 # Estilo Donut
-                    )
-                    st.plotly_chart(fig_pizza, use_container_width=True)
+                st.divider()
 
-                    # --- NOVO: GRÁFICO 4: CALOR (HEATMAP) ---
-                    st.divider()
-                    st.subheader("🔥 Mapa de Calor (Frequência de Notas)")
-                    fig_heat = px.density_heatmap(
-                        df_grafico, 
-                        x=cols[1], # Turmas
-                        y=cols[2], # Notas
-                        title="Concentração de Notas por Turma",
-                        labels={cols[1]: "Turma", cols[2]: "Faixa de Nota"},
-                        color_continuous_scale="Viridis",
-                        text_auto=True
-                    )
-                    st.plotly_chart(fig_heat, use_container_width=True)
+                # --- GRÁFICO 4: PIZZA (ESTILO PREFERÊNCIA) ---
+                st.write("### 🍕 Proporção Percentual")
+                fig4 = px.pie(
+                    df_grafico, 
+                    values=cols[2], 
+                    names=cols[1],
+                    title="Participação por Categoria",
+                    color_discrete_sequence=px.colors.qualitative.Safe
+                )
+                fig4.update_traces(textinfo='percent+label', textposition='inside')
+                st.plotly_chart(fig4, use_container_width=True)
 
                 else:
                     st.warning("Insira números válidos para visualizar os gráficos.")
