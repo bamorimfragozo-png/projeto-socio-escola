@@ -68,7 +68,6 @@ try:
                         color_discrete_map=mapa_cores_turma,
                         title="Notas por Aluno",
                         template="plotly_white",
-                        category_orders={cols[1]: ordem_turmas},
                         category_orders={cols[0]: df_grafico[cols[0]].tolist()}
                     )
                     st.plotly_chart(fig_barras, use_container_width=True)
@@ -101,7 +100,6 @@ try:
                         title="Tendência de Notas",
                         markers=True,
                         template="plotly_white",
-                        category_orders={cols[1]: ordem_turmas}
                     )
                     fig_linha.update_traces(line=dict(width=3))
                     st.plotly_chart(fig_linha, use_container_width=True)
@@ -116,7 +114,6 @@ try:
                         title="Participação de cada Ano no Resultado Total",
                         color=cols[1],
                         color_discrete_map=mapa_cores_turma,
-                        category_orders={cols[1]: ordem_turmas}
                     )
                     fig_pizza.update_traces(textinfo='percent+label', textposition='inside')
                     st.plotly_chart(fig_pizza, use_container_width=True)
