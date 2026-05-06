@@ -55,64 +55,81 @@ try:
         st.divider()
         st.subheader("📊 Análise Visual Completa")
         
-        # Prepara uma cópia para os gráficos
         df_grafico = df_editado.copy()
         cols = df_grafico.columns.tolist()
         
-        # Verifica se temos colunas suficientes (Nome, Turma, Valor)
         if len(cols) >= 3:
             try:
-                # Tratamento Numérico: Converte a 3ª coluna para número (troca vírgula por ponto)
+                # 1. Tratamento Numérico
                 df_grafico[cols[2]] = pd.to_numeric(
                     df_grafico[cols[2]].astype(str).str.replace(',', '.'), 
                     errors='coerce'
                 )
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
                 
-                # Ordenação para consistência visual
+                # --- NOVO: ORDENAÇÃO ALFABÉTICA POR TURMA E NOME ---
+                # Isso garante: 1º Ano (Ana, Bianca), 2º Ano (Bruno, Caio)...
                 df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
+
+                # --- NOVO: PADRONIZAÇÃO DE CORES POR ALUNO ---
+                # Criamos uma lista de cores fixas para cada nome único
+                nomes_unicos = sorted(df_grafico[cols[0]].unique())
+                # Exemplo: Ana=Azul Escuro, Bianca=Vermelho, etc.
+                # Você pode trocar 'Plotly' por outras paletas como 'Dark24' ou 'Alphabet'
+                mapa_cores = {nome: cor for nome, cor in zip(nomes_unicos, px.colors.qualitative.Dark24)}
+                
+                # Se quiser forçar a Ana a ser Azul Escuro especificamente:
+                if "Ana" in mapa_cores:
+                    mapa_cores["Ana"] = "darkblue"
 
                 if not df_grafico.empty:
                     
-                    # --- GRÁFICO 1: BARRAS SIMPLES (Por Aluno) ---
+                    # --- GRÁFICO 1: BARRAS SIMPLES ---
                     st.write("### 📊 Desempenho por Aluno")
                     fig_barras = px.bar(
                         df_grafico, 
                         x=cols[0], 
                         y=cols[2], 
-                        color=cols[1],
-                        title="Notas Individuais (Agrupado por Turma)",
-                        template="plotly_white",
-                        category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
+                        color=cols[0], # Colorir por NOME para usar o mapa de cores
+                        color_discrete_map=mapa_cores, # APLICA AS CORES FIXAS
+                        title="Notas Individuais (Ordem Alfabética por Turma)",
+                        template="plotly_white"
                     )
                     st.plotly_chart(fig_barras, use_container_width=True)
 
                     st.divider()
 
-                    # --- GRÁFICO 2: BARRAS EMPILHADAS (Por Turma) ---
-                    st.write("### 📦 Distribuição Acumulada por Turma")
+                    # --- GRÁFICO 2: BARRAS EMPILHADAS (PERCENTUAL 100%) ---
+                    st.write("### 📦 Participação por Turma (100%)")
                     fig_stack = px.bar(
                         df_grafico, 
                         x=cols[1], 
                         y=cols[2], 
                         color=cols[0],
-                        title="Soma de Notas Empilhadas por Turma",
+                        color_discrete_map=mapa_cores, # MESMA COR AQUI
+                        title="Contribuição de cada Aluno no total da Turma",
                         template="plotly_white", 
-                        barmode='stack'
+                        barmode='stack',
+                        barnorm='percent' # Mostra 100% para comparar turmas de tamanhos diferentes
                     )
-                    fig_stack.update_traces(marker_line_width=1.5, marker_line_color="white")
+                    fig_stack.update_traces(
+                        marker_line_width=1.5, 
+                        marker_line_color="white",
+                        hovertemplate="<b>Aluno:</b> %{fullData.name}<br><b>Percentual:</b> %{y:.1f}%<extra></extra>"
+                    )
                     st.plotly_chart(fig_stack, use_container_width=True)
 
                     st.divider()
 
-                    # --- GRÁFICO 3: LINHAS (Evolução/Temporal) ---
+                    # --- GRÁFICO 3: LINHAS (Evolução) ---
                     st.write("### 📈 Evolução Temporal")
                     fig_linha = px.line(
                         df_grafico, 
                         x=cols[0], 
                         y=cols[2], 
-                        color=cols[1], 
-                        title="Tendência de Desempenho",
+                        color=cols[0], # Linha por NOME
+                        color_discrete_map=mapa_cores, # MESMA COR AQUI
+                        title="Tendência de Desempenho Individual",
                         markers=True,
                         template="plotly_white"
                     )
@@ -121,21 +138,19 @@ try:
 
                     st.divider()
 
-                    # --- GRÁFICO 4: PIZZA (Proporcional) ---
-                    st.write("### 🍕 Distribuição Proporcional")
+                    # --- GRÁFICO 4: PIZZA ---
+                    st.write("### 🍕 Distribuição de Notas da Escola")
                     fig_pizza = px.pie(
                         df_grafico, 
                         values=cols[2], 
-                        names=cols[1], 
-                        title="Participação Percentual por Turma",
-                        color_discrete_sequence=px.colors.qualitative.Pastel
+                        names=cols[0], # Pizza por NOME
+                        color=cols[0],
+                        color_discrete_map=mapa_cores, # MESMA COR AQUI
+                        title="Quem mais contribui para a média geral",
                     )
                     fig_pizza.update_traces(textinfo='percent+label', textposition='inside')
                     st.plotly_chart(fig_pizza, use_container_width=True)
 
-                else:
-                    st.warning("Insira valores numéricos válidos na terceira coluna para gerar os gráficos.")
-            
             except Exception as e:
                 st.error(f"Erro ao processar gráficos: {e}")
         else:
