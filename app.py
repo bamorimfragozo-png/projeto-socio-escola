@@ -39,7 +39,7 @@ try:
             
             # 3. EXIBE A FESTA (Balões e Sucesso)
             st.balloons()
-            st.success("✅ O Felipe foi enviado para o Google! Atualizando dashboard...")
+            st.success("✅ O dado foi enviado para o Google! Atualizando dashboard...")
             
             # 4. ESPERA 2 SEGUNDOS (Se não o rerun corta os balões)
             time.sleep(2)
