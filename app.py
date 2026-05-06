@@ -3,58 +3,6 @@ from streamlit_gsheets import GSheetsConnection
 import plotly.express as px
 import pandas as pd
 
-# 1. Configuração inicial da página
-st.set_page_config(page_title="Dashboard Sócio-Pedagógico Completo", layout="wide")
-
-st.title("🏫 Dashboard Sócio-Pedagógico")
-
-# 2. Conexão com o Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-# --- 3. Leitura dos dados ---
-try:
-    # Lê os dados da planilha
-    df = conn.read(ttl=0)
-    
-    # Limpeza inicial: remove "nan" e trata como string para o editor
-    for col in df.columns:
-        df[col] = df[col].astype(str).replace('nan', '')
-
-    st.subheader("Visualizar e Editar Dados")
-    st.info("Altere os dados na tabela e clique no botão abaixo para salvar.")
-    
-    # --- 4. Tabela Interativa (Editor de Dados) ---
-    df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
-
-    # 5. Botão para Salvar as alterações
-    if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
-        try:
-            import time  # Necessário para os balões aparecerem
-            
-            # 1. Envia para o Google Sheets
-            conn.update(data=df_editado)
-            
-            # 2. Limpa o cache
-            st.cache_data.clear()
-            
-            # 3. EXIBE A FESTA (Balões e Sucesso)
-            st.balloons()
-            st.success("✅ O dado foi enviado para o Google! Atualizando dashboard...")
-            
-            # 4. ESPERA 2 SEGUNDOS (Se não o rerun corta os balões)
-            time.sleep(2)
-            
-            # 5. Agora sim, reinicia
-            st.rerun()
-            
-        except Exception as e:
-            st.error(f"A PORRA DO ERRO FOI: {e}")
-
-    import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import plotly.express as px
-import pandas as pd
-
 
 # 1. Configuração inicial da página
 st.set_page_config(page_title="Dashboard Sócio-Pedagógico Completo", layout="wide")
@@ -208,13 +156,6 @@ try:
         else:
             st.warning("A planilha precisa de pelo menos 3 colunas (Ex: Nome, Turma, Nota).")
 
-
-except Exception as e:
-    st.error(f"Erro de conexão: {e}")
-    st.info("Verifique os Secrets e se a planilha está compartilhada com o e-mail do robô.")
-
-        else:
-            st.warning("A planilha precisa de pelo menos 3 colunas (Ex: Nome, Turma, Nota).")
 
 except Exception as e:
     st.error(f"Erro de conexão: {e}")
