@@ -143,7 +143,7 @@ try:
                         color=cols[0],       # Cor por NOME
                         size=cols[2],        # Tamanho pela nota
                         color_discrete_sequence=paleta_alunos, # Mesma paleta do gráfico 2
-                        title="Validação de Cores Individuais",
+                        title="Validação Individual",
                         template="plotly_white"
                     )
                     fig_dispersao.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
