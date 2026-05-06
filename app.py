@@ -60,6 +60,8 @@ try:
                 
                 # Remove linhas sem nota para não sujar o gráfico
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
+                # Organiza por Turma (cols[1]) e depois por Nome (cols[0])
+                df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
 
                 if not df_grafico.empty:
                     fig = px.bar(
@@ -67,9 +69,11 @@ try:
                         x=cols[0], 
                         y=cols[2], 
                         color=cols[1] if len(cols) > 1 else None,
-                        title="Desempenho por Aluno",
+                        title="Desempenho por Aluno (Agrupado por Turma)",
                         template="plotly_white",
-                        labels={cols[2]: "Nota"}
+                        labels={cols[0]: "Nome do Aluno", cols[2]: "Nota", cols[1]: "Turma"},
+                        # ADICIONE ESTA LINHA ABAIXO:
+                        category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
                     )
                     fig.update_yaxes(range=[0, 10]) # Escala de 0 a 10
                     st.plotly_chart(fig, use_container_width=True)
