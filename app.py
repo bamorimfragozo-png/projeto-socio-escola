@@ -14,7 +14,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # --- 3. Leitura dos dados ---
 try:
     # Lê os dados da planilha
-    df = conn.read()
+    df = conn.read(ttl=0)
     
     # Limpeza inicial: remove "nan" e trata como string para o editor
     for col in df.columns:
@@ -26,12 +26,14 @@ try:
     # --- 4. Tabela Interativa (Editor de Dados) ---
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
+    st.cache_data.clear()
     # 5. Botão para Salvar as alterações
     if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
             conn.update(data=df_editado)
             st.success("✅ Sucesso! Os dados foram atualizados na sua planilha do Google.")
             st.balloons()
+            st.rerun()
         except Exception as e:
             st.error(f"Erro ao salvar: {e}")
 
