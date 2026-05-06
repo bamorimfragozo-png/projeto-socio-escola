@@ -29,19 +29,22 @@ try:
     # 5. Botão para Salvar as alterações
     if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
-            # 1. Garante que estamos enviando apenas os dados limpos, sem índices extras
-            dados_para_salvar = df_editado.copy()
+            import time  # Necessário para os balões aparecerem
             
-            # 2. Envia para o Google Sheets (o parâmetro 'data' precisa ser o DataFrame)
-            conn.update(data=dados_para_salvar)
+            # 1. Envia para o Google Sheets
+            conn.update(data=df_editado)
             
-            # 3. Limpa o cache para que a próxima leitura não venha "viciada"
+            # 2. Limpa o cache
             st.cache_data.clear()
             
-            st.success("✅ O Felipe foi enviado para o Google! Verifique a planilha agora.")
+            # 3. EXIBE A FESTA (Balões e Sucesso)
             st.balloons()
+            st.success("✅ O Felipe foi enviado para o Google! Atualizando dashboard...")
             
-            # 4. O rerun é essencial para atualizar a visão de todo mundo
+            # 4. ESPERA 2 SEGUNDOS (Se não o rerun corta os balões)
+            time.sleep(2)
+            
+            # 5. Agora sim, reinicia
             st.rerun()
             
         except Exception as e:
