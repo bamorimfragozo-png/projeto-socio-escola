@@ -75,6 +75,16 @@ try:
                         # ADICIONE ESTA LINHA ABAIXO:
                         category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
                     )
+                    fig = px.bar(
+                        df_grafico, 
+                        x=cols[1],           # Segunda coluna como base do eixo X (ex: Turma)
+                        y=cols[2],           # Terceira coluna como valor (ex: Nota)
+                        color=cols[0],       # Primeira coluna define o empilhamento (ex: Aluno)
+                        title="Distribuição Empilhada por Categoria",
+                        labels={cols[2]: "Total", cols[1]: "Categoria"},
+                        template="plotly_white",
+                        barmode='stack'      # Garante que as barras fiquem uma sobre a outra
+                    )
                     fig.update_yaxes(range=[0, 10]) # Escala de 0 a 10
                     st.plotly_chart(fig, use_container_width=True)
                 else:
