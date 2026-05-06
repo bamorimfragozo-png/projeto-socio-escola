@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import plotly.express as px
-import pandas as pd
+import pandas as pd 
 
 # 1. Configuração inicial da página
 st.set_page_config(page_title="Dashboard Sócio-Pedagógico", layout="wide")
@@ -40,48 +40,64 @@ try:
         
         if len(cols) >= 3:
             try:
-                # Conversão de valores
                 df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]].astype(str).str.replace(',', '.'), errors='coerce')
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
+                df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
 
                 if not df_grafico.empty:
-                    
-                    # --- GRÁFICO 1: LINHAS (Igual à primeira imagem) ---
-                    # Mostra a evolução das notas/temperaturas
-                    st.write("### 📈 Evolução Mensal/Temporal")
-                    fig_linha = px.line(
+                    # --- GRÁFICO 1: BARRAS SIMPLES ---
+                    fig = px.bar(
                         df_grafico, 
-                        x=cols[0], # Nome ou Data no eixo X
-                        y=cols[2], # Valor no eixo Y
-                        color=cols[1], # Linhas diferentes por Turma/Categoria
-                        title="Desempenho ao Longo do Tempo",
-                        markers=True, # Adiciona pontos na linha
-                        template="plotly_white"
+                        x=cols[0], 
+                        y=cols[2], 
+                        color=cols[1],
+                        title="Desempenho por Aluno (Agrupado por Turma)",
+                        template="plotly_white",
+                        category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
                     )
-                    # Ajuste de cores para parecer com a imagem (opcional)
-                    fig_linha.update_traces(line=dict(width=3))
-                    st.plotly_chart(fig_linha, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True)
 
+                    # --- GRÁFICO 2: BARRAS EMPILHADAS ---
                     st.divider()
+                    st.subheader("📊 Análise de Barras Empilhadas")
+                    fig_stack = px.bar(
+                        df_grafico, x=cols[1], y=cols[2], color=cols[0],
+                        title="Distribuição Empilhada por Aluno",
+                        template="plotly_white", barmode='stack'
+                    )
+                    fig_stack.update_traces(marker_line_width=1.5, marker_line_color="white")
+                    st.plotly_chart(fig_stack, use_container_width=True)
 
-                    # --- GRÁFICO 2: PIZZA (Igual à segunda imagem) ---
-                    # Mostra a preferência ou distribuição proporcional
-                    st.write("### 🍕 Distribuição Proporcional")
+                    # --- NOVO: GRÁFICO 3: PIZZA (PROPORÇÃO DE NOTAS POR TURMA) ---
+                    st.divider()
+                    st.subheader("🍕 Distribuição Proporcional (Pizza)")
                     fig_pizza = px.pie(
                         df_grafico, 
                         values=cols[2], 
-                        names=cols[1], # Categorias (Ex: Turma ou Gênero de Filme)
-                        title="Distribuição Percentual por Categoria",
-                        color_discrete_sequence=px.colors.qualitative.Pastel # Cores vibrantes
+                        names=cols[1], # Agrupado por Turma
+                        title="Proporção da Soma de Notas por Turma",
+                        hole=0.3 # Estilo Donut
                     )
-                    # Adiciona a porcentagem dentro da fatia igual na sua foto
-                    fig_pizza.update_traces(textinfo='percent+label', textposition='inside')
                     st.plotly_chart(fig_pizza, use_container_width=True)
 
+                    # --- NOVO: GRÁFICO 4: CALOR (HEATMAP) ---
+                    st.divider()
+                    st.subheader("🔥 Mapa de Calor (Frequência de Notas)")
+                    fig_heat = px.density_heatmap(
+                        df_grafico, 
+                        x=cols[1], # Turmas
+                        y=cols[2], # Notas
+                        title="Concentração de Notas por Turma",
+                        labels={cols[1]: "Turma", cols[2]: "Faixa de Nota"},
+                        color_continuous_scale="Viridis",
+                        text_auto=True
+                    )
+                    st.plotly_chart(fig_heat, use_container_width=True)
+
                 else:
-                    st.warning("Insira números válidos para gerar os gráficos.")
+                    st.warning("Insira números válidos para visualizar os gráficos.")
             except Exception as e:
                 st.error(f"Erro técnico: {e}")
 
 except Exception as e:
-    st.error(f"Erro ao conectar com a planilha: {e}")
+    st.error(f"Erro de conexão: {e}")
