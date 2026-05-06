@@ -29,13 +29,23 @@ try:
     # 5. Botão para Salvar as alterações
     if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
-            conn.update(data=df_editado)
+            # 1. Garante que estamos enviando apenas os dados limpos, sem índices extras
+            dados_para_salvar = df_editado.copy()
+            
+            # 2. Envia para o Google Sheets (o parâmetro 'data' precisa ser o DataFrame)
+            conn.update(data=dados_para_salvar)
+            
+            # 3. Limpa o cache para que a próxima leitura não venha "viciada"
             st.cache_data.clear()
-            st.success("✅ Sucesso! Os dados foram atualizados na sua planilha do Google.")
+            
+            st.success("✅ O Felipe foi enviado para o Google! Verifique a planilha agora.")
             st.balloons()
+            
+            # 4. O rerun é essencial para atualizar a visão de todo mundo
             st.rerun()
+            
         except Exception as e:
-            st.error(f"Erro ao salvar: {e}")
+            st.error(f"A PORRA DO ERRO FOI: {e}")
 
     # --- 6. Seção de Gráficos ---
     if not df_editado.empty:
