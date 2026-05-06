@@ -71,7 +71,7 @@ try:
                 if not df_grafico.empty:
                     
                     # --- GRÁFICO 1: BARRAS SIMPLES ---
-                    st.write("### 📊 Desempenho Individual (Ordenado por Ano/Nome)")
+                    st.write("Desempenho Individual (Ordenado por Ano/Nome)")
                     fig_barras = px.bar(
                         df_grafico, 
                         x=cols[0], 
