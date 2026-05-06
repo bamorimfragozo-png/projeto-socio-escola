@@ -26,7 +26,6 @@ try:
     # --- 4. Tabela Interativa (Editor de Dados) ---
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
-    st.cache_data.clear()
     # 5. Botão para Salvar as alterações
     if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
