@@ -7,7 +7,7 @@ import time
 # 1. Configuração inicial da página
 st.set_page_config(page_title="Dashboard Sócio-Pedagógico Completo", layout="wide")
 
-st.title("🏫 Dashboard Sócio-Pedagógico")
+st.title("Dashboard")
 
 # 2. Conexão com o Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
@@ -22,19 +22,18 @@ try:
         df[col] = df[col].astype(str).replace('nan', '')
 
     st.subheader("Visualizar e Editar Dados")
-    st.info("💡 Dica: Use 'TAB' para pular para a próxima coluna e 'ENTER' para a linha de baixo.")
     
     # --- 4. Tabela Interativa (Editor de Dados) ---
     df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
     # 5. Botão para Salvar as alterações
-    if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
+    if st.button("SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
             # Envia para o Google Sheets
             conn.update(data=df_editado)
             st.cache_data.clear()
             st.balloons()
-            st.success("✅ Dados salvos com sucesso! Atualizando...")
+            st.success("Dados salvos com sucesso! Atualizando...")
             time.sleep(2)
             st.rerun()
         except Exception as e:
@@ -43,7 +42,7 @@ try:
     # --- 6. Seção de Gráficos ---
     if not df_editado.empty:
         st.divider()
-        st.subheader("📊 Análise Visual Completa")
+        st.subheader("Análise Visual Completa")
         
         df_grafico = df_editado.copy()
         cols = df_grafico.columns.tolist()
