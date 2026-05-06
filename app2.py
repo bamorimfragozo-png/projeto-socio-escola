@@ -41,12 +41,18 @@ try:
                 # Color = Aluno (O que divide a barra)
                 fig = px.bar(
                     df_grafico, 
-                    x=cols[1], 
-                    y=cols[2], 
-                    color=cols[0],
-                    title="Visão Geral por Turma (Soma de Notas)",
+                    x=cols[1],           # Eixo X (ex: Ano/Turma)
+                    y=cols[2],           # Eixo Y (Nota/Valor)
+                    color=cols[0],       # Cor por Aluno
+                    title="Distribuição Empilhada por Aluno",
                     template="plotly_white",
-                    barmode='stack' # Força uma barra em cima da outra
+                    barmode='stack'      # Garante o empilhamento
+                )
+
+                # --- ESTA É A PARTE QUE CRIA O EFEITO DA SEGUNDA FOTO ---
+                fig.update_traces(
+                    marker_line_width=1.5,     # Adiciona uma borda nas fatias
+                    marker_line_color="white"  # Cor da borda (branco separa bem as cores)
                 )
                 
                 # Melhora o visual: força o eixo X a não pular números
