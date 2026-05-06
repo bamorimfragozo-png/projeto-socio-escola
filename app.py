@@ -46,68 +46,57 @@ try:
         st.divider()
         st.subheader("📊 Análise Visual")
         
-        # Criamos uma cópia para o gráfico
         df_grafico = df_editado.copy()
         cols = df_grafico.columns.tolist()
         
         if len(cols) >= 3:
             try:
-                # Importante: Importe o pandas no topo do arquivo: import pandas as pd
                 import pandas as pd 
                 
-                # Converte a 3ª coluna (Notas) para número, ignorando erros
+                # Conversão de Notas para números
                 df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]].astype(str).str.replace(',', '.'), errors='coerce')
-                
-                # Remove linhas sem nota para não sujar o gráfico
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
-                # Organiza por Turma (cols[1]) e depois por Nome (cols[0])
+                
+                # Ordenação para o primeiro gráfico
                 df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
 
-                if not df_grafico.empty:
-                    fig = px.bar(
-                        df_grafico, 
-                        x=cols[0], 
-                        y=cols[2], 
-                        color=cols[1] if len(cols) > 1 else None,
-                        title="Desempenho por Aluno (Agrupado por Turma)",
-                        template="plotly_white",
-                        labels={cols[0]: "Nome do Aluno", cols[2]: "Nota", cols[1]: "Turma"},
-                        # ADICIONE ESTA LINHA ABAIXO:
-                        category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
-                    )
-                    fig.update_yaxes(range=[0, 10]) # Escala de 0 a 10
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.warning("Insira números válidos na coluna de notas para visualizar o gráfico.")
-                    
+                # --- GRÁFICO 1: BARRAS LADO A LADO ---
+                fig1 = px.bar(
+                    df_grafico, 
+                    x=cols[0], 
+                    y=cols[2], 
+                    color=cols[1],
+                    title="Desempenho Individual por Aluno",
+                    template="plotly_white",
+                    labels={cols[0]: "Nome", cols[2]: "Nota", cols[1]: "Turma"},
+                    category_orders={cols[0]: df_grafico[cols[0]].tolist()} 
+                )
+                fig1.update_yaxes(range=[0, 10])
+                st.plotly_chart(fig1, use_container_width=True)
+
+                # --- AGORA A PORRA DO GRÁFICO EMPILHADO (GRÁFICO 2) ---
+                st.write("---")
+                st.subheader("📊 Distribuição Acumulada por Turma")
+                
+                fig2 = px.bar(
+                    df_grafico, 
+                    x=cols[1],           # Eixo X é a TURMA (1 ano, 2 ano...)
+                    y=cols[2],           # Eixo Y é a NOTA
+                    color=cols[0],       # CADA COR É UM ALUNO DIFERENTE
+                    title="Análise Empilhada (Soma de Notas por Turma)",
+                    template="plotly_white",
+                    barmode='stack',     # ISSO AQUI FORÇA O EMPILHAMENTO
+                    labels={cols[1]: "Turma", cols[2]: "Nota Acumulada", cols[0]: "Aluno"}
+                )
+                
+                # Ajuste visual para separar as fatias da barra
+                fig2.update_traces(marker_line_width=1.5, marker_line_color="white")
+                fig2.update_layout(xaxis={'type': 'category'})
+                
+                st.plotly_chart(fig2, use_container_width=True)
+
             except Exception as e:
                 st.error(f"Erro técnico no gráfico: {e}")
-        # --- NOVO: SEGUNDO GRÁFICO (ANÁLISE EMPILHADA) ---
-                st.divider()
-                st.subheader("📊 Análise de Barras Empilhadas")
-
-                if not df_grafico.empty:
-                    # O segredo do empilhamento:
-                    # x = Turma (cols[1]), color = Aluno (cols[0])
-                    fig_stack = px.bar(
-                        df_grafico, 
-                        x=cols[1],           # Eixo X (ex: Ano/Turma)
-                        y=cols[2],           # Eixo Y (Nota/Valor)
-                        color=cols[0],       # Cor por Aluno
-                        title="Distribuição Empilhada por Aluno",
-                        template="plotly_white",
-                        barmode='stack'      # Garante o empilhamento
-                    )
-
-                    fig_stack.update_traces(
-                        marker_line_width=1.5,     # Adiciona uma borda nas fatias
-                        marker_line_color="white"  # Cor da borda
-                    )
-                    
-                    fig_stack.update_layout(xaxis={'type': 'category'})
-                    
-                    st.plotly_chart(fig_stack, use_container_width=True)
-                    st.caption(f"Legenda: O eixo X mostra **{cols[1]}**, empilhado por **{cols[0]}**.")
 
 except Exception as e:
     st.error(f"Erro ao conectar com a planilha: {e}")
