@@ -31,6 +31,7 @@ try:
     if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
         try:
             conn.update(data=df_editado)
+            st.cache_data.clear()
             st.success("✅ Sucesso! Os dados foram atualizados na sua planilha do Google.")
             st.balloons()
             st.rerun()
