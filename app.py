@@ -82,6 +82,32 @@ try:
                     
             except Exception as e:
                 st.error(f"Erro técnico no gráfico: {e}")
+        # --- NOVO: SEGUNDO GRÁFICO (ANÁLISE EMPILHADA) ---
+                st.divider()
+                st.subheader("📊 Análise de Barras Empilhadas")
+
+                if not df_grafico.empty:
+                    # O segredo do empilhamento:
+                    # x = Turma (cols[1]), color = Aluno (cols[0])
+                    fig_stack = px.bar(
+                        df_grafico, 
+                        x=cols[1],           # Eixo X (ex: Ano/Turma)
+                        y=cols[2],           # Eixo Y (Nota/Valor)
+                        color=cols[0],       # Cor por Aluno
+                        title="Distribuição Empilhada por Aluno",
+                        template="plotly_white",
+                        barmode='stack'      # Garante o empilhamento
+                    )
+
+                    fig_stack.update_traces(
+                        marker_line_width=1.5,     # Adiciona uma borda nas fatias
+                        marker_line_color="white"  # Cor da borda
+                    )
+                    
+                    fig_stack.update_layout(xaxis={'type': 'category'})
+                    
+                    st.plotly_chart(fig_stack, use_container_width=True)
+                    st.caption(f"Legenda: O eixo X mostra **{cols[1]}**, empilhado por **{cols[0]}**.")
 
 except Exception as e:
     st.error(f"Erro ao conectar com a planilha: {e}")
