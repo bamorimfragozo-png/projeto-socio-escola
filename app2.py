@@ -3,74 +3,59 @@ from streamlit_gsheets import GSheetsConnection
 import plotly.express as px
 import pandas as pd
 
-# 1. Configuração inicial da página
-st.set_page_config(page_title="Dashboard Sócio-Pedagógico", layout="wide")
+# 1. Configuração
+st.set_page_config(page_title="Análise Empilhada", layout="wide")
+st.title("📊 Análise de Barras Empilhadas")
 
-st.title("🏫 Dashboard Sócio-Pedagógico")
-
-# 2. Conexão com o Google Sheets
+# 2. Conexão (Lembre-se de configurar os Secrets para este novo App!)
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# --- 3. Leitura dos dados ---
 try:
     df = conn.read()
     
-    # Limpeza e normalização
+    # Limpeza para evitar erros de "nan" ou células vazias
     for col in df.columns:
         df[col] = df[col].astype(str).replace('nan', '')
 
-    st.subheader("Visualizar e Editar Dados")
-    df_editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
+    st.subheader("Dados da Planilha")
+    # Mostramos apenas os dados para conferência
+    st.dataframe(df, use_container_width=True)
 
-    # 5. Botão para Salvar
-    if st.button("💾 SALVAR ALTERAÇÕES NA PLANILHA"):
-        try:
-            conn.update(data=df_editado)
-            st.success("✅ Dados atualizados com sucesso!")
-            st.balloons()
-        except Exception as e:
-            st.error(f"Erro ao salvar: {e}")
-
-    # 6. Gráfico de Barras Empilhadas
-    if not df_editado.empty:
+    if not df.empty:
         st.divider()
-        st.subheader("📊 Análise de Barras Empilhadas")
-        
-        df_grafico = df_editado.copy()
+        df_grafico = df.copy()
         cols = df_grafico.columns.tolist()
         
         if len(cols) >= 3:
-            try:
-                # Conversão da coluna de valores (Notas/Frequência)
-                df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]].astype(str).str.replace(',', '.'), errors='coerce')
-                df_grafico = df_grafico.dropna(subset=[cols[2]])
+            # Conversão essencial: Notas para números
+            df_grafico[cols[2]] = pd.to_numeric(df_grafico[cols[2]].str.replace(',', '.'), errors='coerce')
+            df_grafico = df_grafico.dropna(subset=[cols[2]])
 
-                if not df_grafico.empty:
-                    # Criando o gráfico empilhado
-                    # x = categoria principal (ex: Turma)
-                    # y = valor (ex: Nota)
-                    # color = o que divide a barra (ex: Aluno ou Disciplina)
-                    fig = px.bar(
-                        df_grafico, 
-                        x=cols[1],           # Segunda coluna como base do eixo X (ex: Turma)
-                        y=cols[2],           # Terceira coluna como valor (ex: Nota)
-                        color=cols[0],       # Primeira coluna define o empilhamento (ex: Aluno)
-                        title="Distribuição Empilhada por Categoria",
-                        labels={cols[2]: "Total", cols[1]: "Categoria"},
-                        template="plotly_white",
-                        barmode='stack'      # Garante que as barras fiquem uma sobre a outra
-                    )
-                    
-                    # Ajuste para mostrar o total no topo ou legendas claras
-                    fig.update_layout(showlegend=True)
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    st.caption(f"Legenda: O eixo X mostra **{cols[1]}**, empilhado por **{cols[0]}**.")
-                else:
-                    st.warning("Dados numéricos insuficientes para gerar o gráfico.")
-                    
-            except Exception as e:
-                st.error(f"Erro técnico no gráfico: {e}")
+            # Filtro para remover linhas totalmente vazias que bugam o gráfico
+            df_grafico = df_grafico[df_grafico[cols[0]] != ""]
+
+            if not df_grafico.empty:
+                # O segredo do empilhamento:
+                # X = Turma (Categoria)
+                # Y = Nota (Valor acumulado)
+                # Color = Aluno (O que divide a barra)
+                fig = px.bar(
+                    df_grafico, 
+                    x=cols[1], 
+                    y=cols[2], 
+                    color=cols[0],
+                    title="Visão Geral por Turma (Soma de Notas)",
+                    template="plotly_white",
+                    barmode='stack' # Força uma barra em cima da outra
+                )
+                
+                # Melhora o visual: força o eixo X a não pular números
+                fig.update_layout(xaxis={'type': 'category'})
+                
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("Certifique-se de que a terceira coluna tem números válidos.")
 
 except Exception as e:
-    st.error(f"Erro ao conectar: {e}")
+    st.error(f"Erro: {e}")
+    st.info("Dica: Se este é um novo App no Streamlit Cloud, você precisa colar o JSON nos Secrets dele também!")
