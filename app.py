@@ -51,7 +51,6 @@ try:
                 df_grafico = df_grafico.dropna(subset=[cols[2]])
                 # ORDENAÇÃO ALFABÉTICA POR ANO E DEPOIS POR NOME 
                 df_grafico = df_grafico.sort_values(by=[cols[1], cols[0]])
-                ordem_turmas = sorted(df_grafico[cols[1]].unique())
                 # PADRONIZAÇÃO DE CORES 
                 turmas_unicas = sorted(df_grafico[cols[1]].unique())
                 paleta_turmas = px.colors.qualitative.Set1 
