@@ -42,7 +42,6 @@ try:
     # --- 6. Seção de Gráficos ---
     if not df_editado.empty:
         st.divider()
-        st.subheader("Análise Visual Completa")
         
         df_grafico = df_editado.copy()
         cols = df_grafico.columns.tolist()
@@ -149,7 +148,6 @@ try:
                     )
                     fig_dispersao.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
                     st.plotly_chart(fig_dispersao, use_container_width=True)
-                    st.caption("Observe se a cor da bolha coincide com a cor do aluno no gráfico empilhado.")
 
                 else:
                     st.warning("Insira valores numéricos válidos na terceira coluna para gerar os gráficos.")
